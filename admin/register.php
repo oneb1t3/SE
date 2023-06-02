@@ -2,8 +2,7 @@
 
 include '../components/connect.php';
 
-if(isset($_POST['submit'])){
-
+if (isset($_POST['submit'])) {
    $id = unique_id();
    $name = $_POST['name'];
    $name = filter_var($name, FILTER_SANITIZE_STRING);
@@ -11,9 +10,9 @@ if(isset($_POST['submit'])){
    $profession = filter_var($profession, FILTER_SANITIZE_STRING);
    $email = $_POST['email'];
    $email = filter_var($email, FILTER_SANITIZE_STRING);
-   $pass = sha1($_POST['pass']);
+   $pass = $_POST['pass'];
    $pass = filter_var($pass, FILTER_SANITIZE_STRING);
-   $cpass = sha1($_POST['cpass']);
+   $cpass = $_POST['cpass'];
    $cpass = filter_var($cpass, FILTER_SANITIZE_STRING);
 
    $image = $_FILES['image']['name'];
@@ -26,23 +25,25 @@ if(isset($_POST['submit'])){
 
    $select_tutor = $conn->prepare("SELECT * FROM `tutors` WHERE email = ?");
    $select_tutor->execute([$email]);
-   
-   if($select_tutor->rowCount() > 0){
+
+   if ($select_tutor->rowCount() > 0) {
       $message[] = 'Email already taken!';
-   }else{
-      if($pass != $cpass){
+   } else {
+      if ($pass != $cpass) {
          $message[] = 'Confirm password not matched!';
-      }else{
+      } else {
+         // Hash the password using bcrypt algorithm
+         $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
+
          $insert_tutor = $conn->prepare("INSERT INTO `tutors`(id, name, profession, email, password, image) VALUES(?,?,?,?,?,?)");
-         $insert_tutor->execute([$id, $name, $profession, $email, $cpass, $rename]);
+         $insert_tutor->execute([$id, $name, $profession, $email, $hashed_pass, $rename]);
          move_uploaded_file($image_tmp_name, $image_folder);
          $message[] = 'New tutor registered! Please login now.';
       }
    }
-
 }
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +51,7 @@ if(isset($_POST['submit'])){
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>register</title>
+   <title>Register</title>
 
    <!-- font awesome cdn link  -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
@@ -62,7 +63,7 @@ if(isset($_POST['submit'])){
 <body style="padding-left: 0;">
 
 <?php
-if(isset($message)){
+if(isset($message) && is_array($message)){
    foreach($message as $message){
       echo '
       <div class="message form">
@@ -118,17 +119,6 @@ if(isset($message)){
 </section>
 
 <!-- registe section ends -->
-
-
-
-
-
-
-
-
-
-
-
 
 <script>
 
