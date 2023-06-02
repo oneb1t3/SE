@@ -131,12 +131,12 @@ CREATE TABLE `playlist` (
 --
 
 CREATE TABLE `tutors` (
-  `id` varchar(20) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `profession` varchar(50) NOT NULL,
+  `id` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `profession` varchar(255) NOT NULL,
   `email` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `image` varchar(100) NOT NULL
+  `password` varchar(255) NOT NULL,
+  `image` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -146,11 +146,11 @@ CREATE TABLE `tutors` (
 --
 
 CREATE TABLE `users` (
-  `id` varchar(20) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `email` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `image` varchar(100) NOT NULL
+  `id` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `image` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 COMMIT;
 
