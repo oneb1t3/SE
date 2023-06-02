@@ -2,56 +2,58 @@
 
 include 'components/connect.php';
 
-if(isset($_COOKIE['user_id'])){
+if (isset($_COOKIE['user_id'])) {
    $user_id = $_COOKIE['user_id'];
-}else{
+} else {
    $user_id = '';
 }
 
-if(isset($_POST['submit'])){
+if (isset($_POST['submit'])) {
 
    $id = unique_id();
    $name = $_POST['name'];
    $name = filter_var($name, FILTER_SANITIZE_STRING);
    $email = $_POST['email'];
    $email = filter_var($email, FILTER_SANITIZE_STRING);
-   $pass = sha1($_POST['pass']);
-   $pass = filter_var($pass, FILTER_SANITIZE_STRING);
-   $cpass = sha1($_POST['cpass']);
-   $cpass = filter_var($cpass, FILTER_SANITIZE_STRING);
+   $password = $_POST['pass'];
+   $password = filter_var($password, FILTER_SANITIZE_STRING);
+   $confirmPassword = $_POST['cpass'];
+   $confirmPassword = filter_var($confirmPassword, FILTER_SANITIZE_STRING);
 
    $image = $_FILES['image']['name'];
    $image = filter_var($image, FILTER_SANITIZE_STRING);
    $ext = pathinfo($image, PATHINFO_EXTENSION);
-   $rename = unique_id().'.'.$ext;
+   $rename = unique_id() . '.' . $ext;
    $image_size = $_FILES['image']['size'];
    $image_tmp_name = $_FILES['image']['tmp_name'];
-   $image_folder = 'uploaded_files/'.$rename;
+   $image_folder = 'uploaded_files/' . $rename;
 
    $select_user = $conn->prepare("SELECT * FROM `users` WHERE email = ?");
    $select_user->execute([$email]);
-   
-   if($select_user->rowCount() > 0){
+
+   if ($select_user->rowCount() > 0) {
       $message[] = 'Email already taken!';
-   }else{
-      if($pass != $cpass){
-         $message[] = 'Confirm passowrd not matched!';
-      }else{
-         $insert_user = $conn->prepare("INSERT INTO `users`(id, name, email, password, image) VALUES(?,?,?,?,?)");
-         $insert_user->execute([$id, $name, $email, $cpass, $rename]);
+   } else {
+      if ($password != $confirmPassword) {
+         $message[] = 'Confirm password does not match!';
+      } else {
+         // Hash the password using the bcrypt algorithm
+         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+         $insert_user = $conn->prepare("INSERT INTO `users` (id, name, email, password, image) VALUES (?, ?, ?, ?, ?)");
+         $insert_user->execute([$id, $name, $email, $hashedPassword, $rename]);
          move_uploaded_file($image_tmp_name, $image_folder);
-         
-         $verify_user = $conn->prepare("SELECT * FROM `users` WHERE email = ? AND password = ? LIMIT 1");
-         $verify_user->execute([$email, $pass]);
+
+         $verify_user = $conn->prepare("SELECT * FROM `users` WHERE email = ? LIMIT 1");
+         $verify_user->execute([$email]);
          $row = $verify_user->fetch(PDO::FETCH_ASSOC);
-         
-         if($verify_user->rowCount() > 0){
+
+         if ($verify_user->rowCount() > 0) {
             setcookie('user_id', $row['id'], time() + 60*60*24*30, '/');
             header('location:home.php');
          }
       }
    }
-
 }
 
 ?>
@@ -100,17 +102,6 @@ if(isset($_POST['submit'])){
    </form>
 
 </section>
-
-
-
-
-
-
-
-
-
-
-
 
 <?php include 'components/footer.php'; ?>
 
